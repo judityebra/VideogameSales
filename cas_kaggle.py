@@ -202,42 +202,30 @@ dataset_nou = dataset_nou.join(rating_df)
 # In[27]:
 
 
-dataset_nou.info()
-
-
-# In[28]:
-
-
 dataset_nou = dataset_nou.rename({0: 'E', 1: 'NC', 2: 'M', 3: 'T', 4: 'E10+', 5: 'K-A', 6: 'AO', 7: 'EC', 8: 'RP'}, axis='columns')
 
 
-# In[29]:
+# In[28]:
 
 
 #ja es pot eliminar la columna 
 dataset_nou.drop('Rating', axis ='columns', inplace=True)
 
 
-# In[30]:
+# In[29]:
 
 
 #comprovem que s'ha esborrat
 dataset_nou.head()
 
 
+# In[30]:
+
+
+dataset_nou.Publisher.unique() #no es pot fer OneHotEncoder massa columnes
+
+
 # In[31]:
-
-
-dataset_nou.isnull().sum()
-
-
-# In[32]:
-
-
-dataset.Publisher.unique() #no es pot fer OneHotEncoder massa columnes
-
-
-# In[33]:
 
 
 dataset.Developer.unique()
@@ -245,36 +233,57 @@ dataset.Developer.unique()
 
 # Com es pot observar les columnes 'Publisher' i 'Developer' estan conformades per moltíssims valors unique(), per tant no es pot fer un OneHotEncoder perquè quedarien moltíssimes columnes. Es farà per tant un MeanEncoding on s'agafaran les ventes promig de cadascuna de les categories de publisher i developer i es substituiran en la columa de publisher i developer.
 
-# In[34]:
+# In[32]:
 
 
 publisher = dataset_nou.groupby(['Publisher'])['NA_Sales'].mean().to_dict()
 dataset_nou['Publisher'] = dataset_nou['Publisher'].map(publisher)
 
 
-# In[35]:
+# In[33]:
 
 
 publisher = dataset_nou.groupby(['Developer'])['NA_Sales'].mean().to_dict()
 dataset_nou['Developer'] = dataset_nou['Developer'].map(publisher)
 
 
-# In[36]:
+# In[34]:
 
 
 dataset_nou.head() #ja tenim números a la columna de Publisher i de Developer
 
 
+# Un cop s'han eliminat totes les columnes categòriques o transformat en nombres, menys Name que encara la necessitem, es fa l'eliminació dels NaNs que queden, es poden observar a continuació on hi ha i quants:
+
+# In[35]:
+
+
+dataset_nou.info()
+
+
+# In[36]:
+
+
+dataset_nou.loc[dataset_nou['User_Score'] == 'tbd']  #veiem que hi ha 'tbd' el que genera que 'User_Score' sigui categòrica
+
+
 # In[37]:
 
 
-dataset_nou.loc[dataset_nou['User_Score'] == 'tbd']
+#es crea una nova columna binària anomenada 'tbd'
+tbd = []
+for i in dataset_nou['User_Score']:
+    if i == 'tbd':
+        tbd.append(1)
+    else:
+        tbd.append(0)
+dataset_nou['tbd'] = tbd 
 
 
 # In[38]:
 
 
-dataset_nou['User_Score'] = dataset_nou['User_Score'].replace(['tbd'], -20)
+dataset_nou['User_Score'] = dataset_nou['User_Score'].replace(['tbd'], 0) #es canvien per passar a float
 
 
 # In[39]:
@@ -289,7 +298,7 @@ for i in range(len(dataset_nou)):
     if(math.isnan(dataset_nou.iloc[i]['Critic_Score'])):
         t += 1
     try:
-        dataset_nou.loc[i,['User_Score']] = float(dataset_nou.iloc[i]['User_Score'])
+        dataset_nou.loc[i,['User_Score']] = float(dataset_nou.iloc[i]['User_Score']) #passem la columna a floats
     except:
         if(math.isnan(dataset_nou.iloc[i]['User_Score'])):
             t += 1
@@ -303,152 +312,136 @@ for i in llista:
 #Búsqueda manual dels 'Publishers' que falten
 for i in range(len(dataset_nou)):
     if(math.isnan(dataset_nou.iloc[i]['Publisher'])): 
-        print(dataset_nou.iloc[i]['Name'])
-# Els publishers que falten són: 
-# 
-# Sonic the Hedgehog: SEGA 
-# Yu Yu Hakusho: Dark Tournament: Atari 
-# Stronghold 3: SouthPeak Games 
-# Farming Simulator 2011: Giants Software 
-# World of Tanks: Wargaming
-# Demolition Company: Gold Edition : Giants Software 
-# Dream Dancer : Zoo games
-# Homeworld Remastered Collection : Sierra Estudios
-# Brothers in Arms: Furious 4 : UBISOFT
+        print(dataset_nou.iloc[i]['Name'])Els publishers que falten són: 
 
+Sonic the Hedgehog: SEGA 
+Yu Yu Hakusho: Dark Tournament: Atari 
+Stronghold 3: SouthPeak Games 
+Farming Simulator 2011: Giants Software 
+World of Tanks: Wargaming
+Demolition Company: Gold Edition : Giants Software 
+Dream Dancer : Zoo games
+Homeworld Remastered Collection : Sierra Estudios
+Brothers in Arms: Furious 4 : UBISOFT
 # In[40]:
-
-
-dataset_nou.loc[16718]
-
-
-# In[ ]:
-
-
-
-
-
-# In[46]:
-
-
-#S'afegeixen les dades trobades al dataset
-llista = ['SEGA', 'Atari', 'SouthPeak Games', 'Giants Software', 'Wargaming', 'Giants Software', 'Zoo games', 'Sierra Estudios', 'UBISOFT']
-llista2 = []
-#cont = 0
-for j,i in enumerate(dataset_nou['Publisher']):
-    if(math.isnan(i)): 
-        llista2.append(j)
-llista2
-        #index = dataset_nou.index[dataset_nou.iloc[j]]
-        #dataset_nou.loc[index,['Publisher']] = llista[cont]
-        #cont += 1
-        #dataset_nou.iloc[j]
-
-
-# In[49]:
-
-
-dataset_nou.loc[dataset_nou['Name'] == 'Sonic the Hedgehog']
-
-
-# In[50]:
 
 
 dataset_nou.loc[4127,['Publisher']] = 'SEGA'
 
 
-# In[ ]:
+# In[41]:
 
 
-#hacer con los demas
+dataset_nou.loc[7333,['Publisher']] = 'Atari'
 
 
-# In[ ]:
+# In[42]:
 
 
-dataset_nou.iloc[15402]
+dataset_nou.loc[8494,['Publisher']] = 'SouthPeak Games'
+
+
+# In[43]:
+
+
+dataset_nou.loc[9511,['Publisher']] = 'Giants Software'
+
+
+# In[44]:
+
+
+dataset_nou.loc[14687,['Publisher']] = 'Wargaming'
+
+
+# In[45]:
+
+
+dataset_nou.loc[15442,['Publisher']] = 'Giants Software'
+
+
+# In[46]:
+
+
+dataset_nou.loc[16019,['Publisher']] = 'Zoo Games'
+
+
+# In[47]:
+
+
+dataset_nou.loc[16280,['Publisher']] = 'Sierra Estudios'
+
+
+# In[48]:
+
+
+dataset_nou.loc[16332,['Publisher']] = 'UBISOFT'
+
+
+# In[49]:
+
+
+dataset_nou.info()  #veiem com Publisher ja no té nulls
+
+
+# In[50]:
+
+
+#Ara publisher torna a ser una columna categòrica per tant es torna  fer un Mean Enconding
+publisher = dataset_nou.groupby(['Publisher'])['NA_Sales'].mean().to_dict()
+dataset_nou['Publisher'] = dataset_nou['Publisher'].map(publisher)
 
 
 # In[51]:
 
 
-dataset_nou.info()  #veiem 
+#S'elimina la columna Name finalment
+dataset_nou = dataset_nou.drop(['Name'], axis=1)
 
 
-# Un cop s'han eliminat les columnes categòriques, es fa l'eliminació de 
-# NaNs, es poden observar a continuació on hi ha i quants:
-
-# In[ ]:
-
-
-dataset_nou.info() #amb dataset_nou.isnull().sum() no es veuen totes les columnes 
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
+# In[52]:
 
 
 dataset_nou.info()
 len(dataset_nou)  #es pot observar que s'han eliminat uns 40-50 nulls
 
 
-# In[ ]:
-
-
-y = dataset_nou['Publisher']
-X = dataset_nou.copy()
-X.drop('Publisher', axis ='columns', inplace=True)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
-
-
-# In[ ]:
-
-
-X_sense_G_train_FS = StandardScaler().fit_transform(X_sense_G_train_FS)
-
-
-# In[ ]:
+# In[53]:
 
 
 cp = dataset_nou.copy()
 cp = cp.dropna()
 y = cp['Critic_Score']
 X = cp.copy()
-X.drop(['Critic_Score','User_Score'],  axis ='columns', inplace=True)
+X.drop(['Critic_Score','User_Score','Developer'],  axis ='columns', inplace=True)
 #X.drop(['Critic_Score','Publisher','User_Score','Developer'], axis ='columns', inplace=True)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
 
 
-# In[ ]:
+# In[54]:
 
 
 X_train = StandardScaler().fit_transform(X_train)
 
 
-# In[ ]:
+# In[55]:
 
 
 Lasso = Lasso()
 
 
-# In[ ]:
+# In[56]:
 
 
 cerca_alpha_lasso = GridSearchCV(Lasso, {'alpha':np.arange(0.1,10,0.1)}, cv = 5, scoring="neg_mean_squared_error")
 
 
-# In[ ]:
+# In[57]:
 
 
 cerca_alpha_lasso.fit(X_train, y_train.values.ravel())
 
 
-# In[ ]:
+# In[58]:
 
 
 print("Resultats Grid Search: \n")
@@ -457,7 +450,7 @@ print("Millor score dels paràmetres: \n", cerca_alpha_lasso.best_score_)
 print("Millors paràmetres: \n", cerca_alpha_lasso.best_params_)
 
 
-# In[ ]:
+# In[59]:
 
 
 coefs = cerca_alpha_lasso.best_estimator_.coef_
@@ -465,25 +458,13 @@ importancia = np.abs(coefs)
 importancia
 
 
-# In[ ]:
+# In[60]:
 
 
 X= cp[np.array(X.columns)[importancia > 0].tolist()]
 
 
-# In[ ]:
-
-
-X.info()
-
-
-# In[ ]:
-
-
-dataset_nou.info()
-
-
-# In[ ]:
+# In[61]:
 
 
 regressor_CS = LinearRegression()
@@ -491,38 +472,215 @@ X = StandardScaler().fit_transform(X)
 regressor_CS.fit(X,y)
 
 
-# In[ ]:
+# In[62]:
 
 
 Pred_X = dataset_nou.copy()
-Pred_X.drop(['Critic_Score', 'User_Score'], axis ='columns', inplace=True)
+Pred_X.drop(['Critic_Score', 'User_Score','Developer'], axis ='columns', inplace=True)
 Pred_X = Pred_X[np.array(Pred_X.columns)[importancia > 0].tolist()]
 Pred_X = Pred_X[dataset_nou.isna().any(axis = 1)]
 #Pred_X = Pred_X.dropna()
 
 
-# In[ ]:
-
-
-Pred_X.info()
-
-
-# In[ ]:
+# In[63]:
 
 
 prediccio_CS = regressor_CS.predict(Pred_X)
 
 
-# In[ ]:
+# In[64]:
 
 
+dataset_ple = dataset_nou.copy()
+t = 0 
+for j,i in dataset_ple['Critic_Score'].items():
+    if math.isnan(i):
+        dataset_ple.loc[[j],['Critic_Score']] = prediccio_CS[t]
+        t += 1
+#Substituir els valors NULLS del dataset pels valors predits
+dataset_ple.info()
 
 
+# Es fa el mateix amb User_Score:
 
-# In[ ]:
+# In[65]:
 
 
+cp = dataset_nou.copy()
+cp = cp.dropna()
+y = cp['User_Score']
+X = cp.copy()
+X.drop(['Critic_Score','User_Score','Developer'],  axis ='columns', inplace=True)
+#X.drop(['Critic_Score','Publisher','User_Score','Developer'], axis ='columns', inplace=True)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
 
+
+# In[66]:
+
+
+X_train = StandardScaler().fit_transform(X_train)
+
+
+# In[67]:
+
+
+cerca_alpha_lasso = GridSearchCV(Lasso, {'alpha':np.arange(0.1,10,0.1)}, cv = 5, scoring="neg_mean_squared_error")
+
+
+# In[68]:
+
+
+cerca_alpha_lasso.fit(X_train, y_train.values.ravel())
+
+
+# In[69]:
+
+
+print("Resultats Grid Search: \n")
+print("Millor estimador dels paràmetres buscats: \n", cerca_alpha_lasso.best_estimator_)
+print("Millor score dels paràmetres: \n", cerca_alpha_lasso.best_score_)
+print("Millors paràmetres: \n", cerca_alpha_lasso.best_params_)
+
+
+# In[70]:
+
+
+coefs = cerca_alpha_lasso.best_estimator_.coef_
+importancia = np.abs(coefs)
+importancia
+
+
+# In[71]:
+
+
+X= cp[np.array(X.columns)[importancia > 0].tolist()]
+
+
+# In[72]:
+
+
+regressor_US = LinearRegression()
+X = StandardScaler().fit_transform(X)
+regressor_US.fit(X,y)
+
+
+# In[73]:
+
+
+Pred_X = dataset_nou.copy()
+Pred_X.drop(['Critic_Score','User_Score','Developer'], axis ='columns', inplace=True)
+Pred_X = Pred_X[np.array(Pred_X.columns)[importancia > 0].tolist()]
+Pred_X = Pred_X[dataset_nou.isna().any(axis = 1)]
+#Pred_X = Pred_X.dropna()
+
+
+# In[74]:
+
+
+prediccio_US = regressor_US.predict(Pred_X)
+
+
+# In[75]:
+
+
+t = 0 
+for j,i in dataset_ple['User_Score'].items():
+    if math.isnan(i):
+        dataset_ple.loc[[j],['User_Score']] = prediccio_US[t]
+        t += 1
+#Substituir els valors NULLS del dataset pels valors predits
+dataset_ple.info()
+
+
+# Es fa el mateix amb Developer:
+
+# In[77]:
+
+
+cp = dataset_nou.copy()
+cp = cp.dropna()
+y = cp['Developer']
+X = cp.copy()
+X.drop(['Critic_Score','User_Score','Developer'],  axis ='columns', inplace=True)
+#X.drop(['Critic_Score','Publisher','User_Score','Developer'], axis ='columns', inplace=True)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+
+
+# In[78]:
+
+
+X_train = StandardScaler().fit_transform(X_train)
+
+
+# In[79]:
+
+
+cerca_alpha_lasso = GridSearchCV(Lasso, {'alpha':np.arange(0.1,10,0.1)}, cv = 5, scoring="neg_mean_squared_error")
+
+
+# In[80]:
+
+
+cerca_alpha_lasso.fit(X_train, y_train.values.ravel())
+
+
+# In[81]:
+
+
+print("Resultats Grid Search: \n")
+print("Millor estimador dels paràmetres buscats: \n", cerca_alpha_lasso.best_estimator_)
+print("Millor score dels paràmetres: \n", cerca_alpha_lasso.best_score_)
+print("Millors paràmetres: \n", cerca_alpha_lasso.best_params_)
+
+
+# In[82]:
+
+
+coefs = cerca_alpha_lasso.best_estimator_.coef_
+importancia = np.abs(coefs)
+importancia
+
+
+# In[83]:
+
+
+X= cp[np.array(X.columns)[importancia > 0].tolist()]
+
+
+# In[84]:
+
+
+regressor_de = LinearRegression()
+X = StandardScaler().fit_transform(X)
+regressor_de.fit(X,y)
+
+
+# In[85]:
+
+
+Pred_X = dataset_nou.copy()
+Pred_X.drop(['Critic_Score','User_Score','Developer'], axis ='columns', inplace=True)
+Pred_X = Pred_X[np.array(Pred_X.columns)[importancia > 0].tolist()]
+Pred_X = Pred_X[dataset_nou.isna().any(axis = 1)]
+#Pred_X = Pred_X.dropna()
+
+
+# In[86]:
+
+
+prediccio_de = regressor_de.predict(Pred_X)
+
+
+# In[87]:
+
+
+t = 0 
+for j,i in dataset_ple['Developer'].items():
+    if math.isnan(i):
+        dataset_ple.loc[[j],['Developer']] = prediccio_de[t]
+        t += 1
+#Substituir els valors NULLS del dataset pels valors predits
+dataset_ple.info()
 
 
 # In[ ]:
