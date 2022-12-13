@@ -594,7 +594,7 @@ dataset_ple.info()
 
 # Es fa el mateix amb Developer:
 
-# In[77]:
+# In[76]:
 
 
 cp = dataset_nou.copy()
@@ -606,25 +606,25 @@ X.drop(['Critic_Score','User_Score','Developer'],  axis ='columns', inplace=True
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
 
 
-# In[78]:
+# In[77]:
 
 
 X_train = StandardScaler().fit_transform(X_train)
 
 
-# In[79]:
+# In[78]:
 
 
 cerca_alpha_lasso = GridSearchCV(Lasso, {'alpha':np.arange(0.1,10,0.1)}, cv = 5, scoring="neg_mean_squared_error")
 
 
-# In[80]:
+# In[79]:
 
 
 cerca_alpha_lasso.fit(X_train, y_train.values.ravel())
 
 
-# In[81]:
+# In[80]:
 
 
 print("Resultats Grid Search: \n")
@@ -633,7 +633,7 @@ print("Millor score dels paràmetres: \n", cerca_alpha_lasso.best_score_)
 print("Millors paràmetres: \n", cerca_alpha_lasso.best_params_)
 
 
-# In[82]:
+# In[81]:
 
 
 coefs = cerca_alpha_lasso.best_estimator_.coef_
@@ -641,13 +641,13 @@ importancia = np.abs(coefs)
 importancia
 
 
-# In[83]:
+# In[82]:
 
 
 X= cp[np.array(X.columns)[importancia > 0].tolist()]
 
 
-# In[84]:
+# In[83]:
 
 
 regressor_de = LinearRegression()
@@ -655,7 +655,7 @@ X = StandardScaler().fit_transform(X)
 regressor_de.fit(X,y)
 
 
-# In[85]:
+# In[84]:
 
 
 Pred_X = dataset_nou.copy()
@@ -665,13 +665,13 @@ Pred_X = Pred_X[dataset_nou.isna().any(axis = 1)]
 #Pred_X = Pred_X.dropna()
 
 
-# In[86]:
+# In[85]:
 
 
 prediccio_de = regressor_de.predict(Pred_X)
 
 
-# In[87]:
+# In[86]:
 
 
 t = 0 
@@ -681,6 +681,74 @@ for j,i in dataset_ple['Developer'].items():
         t += 1
 #Substituir els valors NULLS del dataset pels valors predits
 dataset_ple.info()
+
+
+# ## Regressions
+# Ja es pot regressionar.
+
+# In[95]:
+
+
+cp_dataset_ple = dataset_ple.copy()
+y = cp_dataset_ple['NA_Sales']
+X = cp_dataset_ple.copy()
+X.drop(['NA_Sales','Global_Sales'],  axis ='columns', inplace=True)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+
+
+# In[96]:
+
+
+X_train = StandardScaler().fit_transform(X_train)
+
+
+# In[97]:
+
+
+cerca_alpha_lasso = GridSearchCV(Lasso, {'alpha':np.arange(0.1,10,0.1)}, cv = 5, scoring="neg_mean_squared_error")
+
+
+# In[98]:
+
+
+cerca_alpha_lasso.fit(X_train, y_train.values.ravel())
+
+
+# In[99]:
+
+
+print("Resultats Grid Search: \n")
+print("Millor estimador dels paràmetres buscats: \n", cerca_alpha_lasso.best_estimator_)
+print("Millor score dels paràmetres: \n", cerca_alpha_lasso.best_score_)
+print("Millors paràmetres: \n", cerca_alpha_lasso.best_params_)
+
+
+# In[100]:
+
+
+coefs = cerca_alpha_lasso.best_estimator_.coef_
+importancia = np.abs(coefs)
+importancia
+
+
+# In[101]:
+
+
+X= cp[np.array(X.columns)[importancia > 0].tolist()]
+
+
+# In[102]:
+
+
+X
+
+
+# Es pot observar que els atributs que tenen més relació són la resta de sales i el Developer.
+
+# In[ ]:
+
+
+
 
 
 # In[ ]:
